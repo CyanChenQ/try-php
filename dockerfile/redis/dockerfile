@@ -1,0 +1,5 @@
+FROM redis:5.0.9-alpine
+
+
+#容器启动时执行指令
+CMD ["redis-server", "/usr/local/etc/redis/redis.conf"]

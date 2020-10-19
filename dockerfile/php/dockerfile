@@ -1,0 +1,33 @@
+FROM php:7.4.10-fpm-alpine
+
+# 设置时区
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtome && echo $TZ > /etc/timezone
+
+WORKDIR /var/www
+ADD swoole-src-4.5.3.tar.gz /usr/local/swoole/
+
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
+    && apk update \
+    && apk add --no-cache m4 autoconf make gcc g++ linux-headers freetype-dev libjpeg-turbo-dev libpng-dev libzip-dev git unzip \
+	&& docker-php-ext-configure gd --with-freetype --with-jpeg \
+	&& docker-php-ext-install gd zip opcache bcmath\
+    && pecl install redis  \
+    && docker-php-ext-enable redis  \
+    && cd /usr/local/swoole/swoole-src* \
+    && phpize && ./configure \
+    # --enable-openssl 
+    # && --enable-http2 \
+    && make && make install \
+    && docker-php-ext-enable swoole \
+    && rm -rf /usr/local/swoole/swoole-src* 
+    # && apk del --no-cache freetype-dev libpng-dev libjpeg-turbo-dev 
+
+RUN curl -s https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer \
+    && composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/ \
+    && mkdir /var/lib/sessions \
+    && chmod o=rwx -R /var/lib/sessions \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /root/.cache \
+    && rm -rf /tmp/*
+
