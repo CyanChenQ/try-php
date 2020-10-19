@@ -1,0 +1,62 @@
+version: "3"
+
+services:
+    nginx-pra:
+        build: ./dockerfile/nginx
+        container_name: nginx-pra
+        restart: always
+        tty: true
+        ports:
+            - '8080:8080'
+        volumes:
+            # - /private/var/www:/var/www
+            - ../../:/var/www
+            - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+            - ./config/nginx/conf.d:/etc/nginx/conf.d
+            - ./runtime/logs/nginx:/var/log/nginx
+        networks: 
+            lan-network:
+                aliases: 
+                    - nginx-pra
+
+    php-pra:
+        # build: ./dockerfile/php
+        image: cyan0chen/try-php:latest
+        container_name: php-pra
+        restart: always
+        tty: true
+        volumes: 
+            # - /private/var/www:/var/www
+            - ../../:/var/www
+            - ./runtime/logs/php:/var/log/php
+            - ./config/php/php.ini:/usr/local/etc/php/php.ini
+        # command: ['sh', '-c', 'cd /var/www/project_name && composer install --no-interaction && php easyswoole start']
+        networks: 
+            lan-network:
+                aliases: 
+                    - php-pra
+
+    redis:
+        build: ./dockerfile/redis
+        container_name: redis
+        tty: true
+        ports:
+            - "6380:6379"
+        restart: always
+        volumes:
+            # - ../runtime/redis/data:/data
+            - ../config/redis/redis.conf:/usr/local/etc/redis/redis.conf
+            # - ../runtime/logs/redis:/var/log/redis
+        networks:
+            lan-network:
+                aliases:
+                    - back-redis
+
+    
+
+networks:
+    lan-network:
+
+# volumes:
+#     work_dir:
+#         - /private/var/www
