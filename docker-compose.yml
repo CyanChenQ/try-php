@@ -44,15 +44,32 @@ services:
             - "6380:6379"
         restart: always
         volumes:
-            # - ../runtime/redis/data:/data
-            - ../config/redis/redis.conf:/usr/local/etc/redis/redis.conf
-            # - ../runtime/logs/redis:/var/log/redis
+            - ./runtime/redis/data:/data
+            - ./config/redis/redis.conf:/usr/local/etc/redis/redis.conf
+            - ./runtime/logs/redis:/var/log/redis
         networks:
             lan-network:
                 aliases:
                     - back-redis
 
-    
+    elasticsearch:
+        build: ./dockerfile/elasticsearch
+        container_name: elasticsearch
+        tty: true
+        ports:
+            - "9200:9200"
+        restart:  always
+        environment: 
+            - discovery.type=single-node
+            - bootstrap.memory_lock=true
+        volumes: 
+            - ./runtime/elasticsearch:/usr/share/elasticsearch/data
+            - ./runtime/logs/elasticsearch:/usr/share/elasticsearch/logs
+            - ./config/elasticsearch:/usr/share/elasticsearch/config
+        networks: 
+            lan-network:
+                aliases: 
+                    - elasticsearch
 
 networks:
     lan-network:

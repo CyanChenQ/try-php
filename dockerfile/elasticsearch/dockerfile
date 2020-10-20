@@ -1,0 +1,17 @@
+FROM elasticsearch:7.5.1
+
+# 设置时区
+ENV TIMEZONE Asia/Shanghai
+ENV ELASTICSEARCH_VERSION 7.5.1
+
+RUN ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtome && echo $TIMEZONE > /etc/timezone
+
+ADD elasticsearch-analysis-ik-7.5.1.zip /usr/share/elasticsearch/plugins
+
+RUN sed -i -e '/mirrors.cloud.aliyuncs.com/d' -e '/mirrors.aliyuncs.com/d' /etc/yum.repos.d/CentOS-Base.repo \
+    && yum makecache \
+    && yum install -y unzip \
+    && cd /usr/share/elasticsearch/plugins \
+    && unzip -d ./ik elasticsearch-analysis-ik-$ELASTICSEARCH_VERSION.zip \
+    && rm -rf elasticsearch-analysis-ik-$ELASTICSEARCH_VERSION.zip
+
